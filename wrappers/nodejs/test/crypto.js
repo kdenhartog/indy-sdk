@@ -1,3 +1,4 @@
+
 var test = require('ava')
 var indy = require('../')
 var cuid = require('cuid')
@@ -53,6 +54,27 @@ test('crypto', async function (t) {
   decrypted = await indy.cryptoAnonDecrypt(wh, trusteeVerkey, encrypted)
   t.true(Buffer.isBuffer(decrypted))
   t.is(decrypted.toString('utf8'), message.toString('utf8'))
+
+  //pack auth
+  var recipient_verkeys = JSON.stringify([stewardVerkey])
+  var auth_pack_message = await indy.cryptoPackMessage(wh, message, recipient_verkeys, trusteeVerkey)
+  t.true(Buffer.isBuffer(auth_pack_message))
+
+  var auth_unpack_message = await indy.cryptoUnpackMessage(wh, auth_pack_message)
+  var auth_json = JSON.parse(auth_unpack_message)
+  t.is(auth_json.recipient_verkey, stewardVerkey)
+  t.is(auth_json.sender_verkey, trusteeVerkey)
+  t.is(auth_json.message.toString('utf8'), message.toString('utf8'))
+
+    //pack anon
+  var anon_pack_message = await indy.cryptoPackMessage(wh, message, recipient_verkeys, null)
+  t.true(Buffer.isBuffer(anon_pack_message))
+
+  var anon_unpack_message = await indy.cryptoUnpackMessage(wh, auth_pack_message)
+  var anon_json = JSON.parse(auth_unpack_message)
+  t.is(anon_json.recipient_verkey, stewardVerkey)
+  t.is(anon_json.sender_verkey, trusteeVerkey)
+  t.is(anon_json.message.toString('utf8'), message.toString('utf8'))
 
   await indy.closeWallet(wh)
   await indy.deleteWallet(walletConfig, walletCredentials)

@@ -261,6 +261,17 @@ indy.cryptoAnonDecrypt = function cryptoAnonDecrypt (wh, recipientVk, encryptedM
   return cb.promise
 }
 
+indy.cryptoPackMessage = function cryptoPackMessage (wh, message, recipient_verkeys, sender_verkey, cb) {
+  cb = wrapIndyCallback(cb)
+  capi.cryptoPackMessage(wh, message, recipient_verkeys, sender_verkey, cb)
+  return cb.promise
+}
+
+indy.cryptoUnpackMessage = function cryptoUnpackMessage (wh, jwe_json, cb) {
+  cb = wrapIndyCallback(cb)
+  capi.cryptoUnpackMessage(wh, jwe_json, cb)
+  return cb.promise
+}
 indy.createAndStoreMyDid = function createAndStoreMyDid (wh, did, cb) {
   cb = wrapIndyCallback(cb)
   capi.createAndStoreMyDid(wh, toJson(did), cb)

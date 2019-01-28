@@ -1111,6 +1111,48 @@ NAN_METHOD(cryptoAnonDecrypt) {
   delete arg1;
 }
 
+void cryptoPackMessage_cb(indy_handle_t handle, indy_error_t xerr, const indy_u8_t* arg0data, indy_u32_t arg0len) {
+  IndyCallback* icb = IndyCallback::getCallback(handle);
+  if(icb != nullptr){
+    icb->cbBuffer(xerr, arg0data, arg0len);
+  }
+}
+NAN_METHOD(cryptoPackMessage) {
+  INDY_ASSERT_NARGS(cryptoPackMessage, 5)
+  INDY_ASSERT_NUMBER(cryptoPackMessage, 0, wh)
+  INDY_ASSERT_UINT8ARRAY(cryptoPackMessage, 1, messageRaw)
+  INDY_ASSERT_STRING(cryptoPackMessage, 2, recipientVk)
+  INDY_ASSERT_STRING(cryptoPackMessage, 3, senderVk)
+  INDY_ASSERT_FUNCTION(cryptoPackMessage, 4)
+  indy_handle_t arg0 = argToInt32(info[0]);
+    const indy_u8_t* arg1data = (indy_u8_t*)argToBufferData(info[1]);
+  indy_u32_t arg1len = node::Buffer::Length(info[1]);
+  const char* arg2 = argToCString(info[2]);
+  const char* arg3 = argToCString(info[3]);
+  IndyCallback* icb = argToIndyCb(info[4]);
+  indyCalled(icb, indy_pack_message(icb->handle, arg0, arg1data, arg1len, arg2, arg3, cryptoPackMessage_cb));
+  delete arg2;
+  delete arg3;
+}
+
+void cryptoUnpackMessage_cb(indy_handle_t handle, indy_error_t xerr, const indy_u8_t* arg0data, indy_u32_t arg0len) {
+  IndyCallback* icb = IndyCallback::getCallback(handle);
+  if(icb != nullptr){
+    icb->cbBuffer(xerr, arg0data, arg0len);
+  }
+}
+NAN_METHOD(cryptoUnpackMessage) {
+  INDY_ASSERT_NARGS(cryptoUnpackMessage, 3)
+  INDY_ASSERT_NUMBER(cryptoUnpackMessage, 0, wh)
+  INDY_ASSERT_UINT8ARRAY(cryptoUnpackMessage, 1, messageRaw)
+  INDY_ASSERT_FUNCTION(cryptoPackMessage, 2)
+  indy_handle_t arg0 = argToInt32(info[0]);
+    const indy_u8_t* arg1data = (indy_u8_t*)argToBufferData(info[1]);
+  indy_u32_t arg1len = node::Buffer::Length(info[1]);
+  IndyCallback* icb = argToIndyCb(info[2]);
+  indyCalled(icb, indy_crypto_auth_crypt(icb->handle, arg0, arg1data, arg1len, cryptoUnpackMessage_cb));
+}
+
 void createAndStoreMyDid_cb(indy_handle_t handle, indy_error_t xerr, const char *const arg0, const char *const arg1) {
   IndyCallback* icb = IndyCallback::getCallback(handle);
   if(icb != nullptr){
